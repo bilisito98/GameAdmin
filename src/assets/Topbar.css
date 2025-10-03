@@ -1,0 +1,86 @@
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    padding: 0 18px;
+    background: rgba(31,41,55,0.95);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* left group - menu + title */
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* menu button */
+.menu-btn {
+    font-size: 1.25rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+}
+.menu-btn:hover { background: rgba(255,255,255,0.03); }
+
+/* title */
+.topbar-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* actions on the right */
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+/* notifications */
+.notifications { position: relative; }
+.notif-btn { background: none; border: none; color: white; cursor: pointer; position: relative; padding: 6px; border-radius: 8px; }
+.notif-btn:hover { background: rgba(255,255,255,0.03); }
+.notif-icon { width: 22px; height: 22px; }
+.notif-badge {
+    position: absolute; top: -6px; right: -6px;
+    background: #ef4444; color: white; width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 0.72rem;
+}
+.notif-dropdown {
+    position: absolute; right: 0; top: 46px;
+    width: 260px; background: white; color: #1f2937; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+    z-index: 200; padding: 10px;
+}
+
+/* user menu */
+.user-menu { position: relative; }
+.user-btn { display: flex; align-items: center; gap: 10px; background: none; border: none; color: white; cursor: pointer; padding: 6px; border-radius: 8px; }
+.user-btn:hover { background: rgba(255,255,255,0.03); }
+.user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.06); }
+.user-name { font-size: 0.95rem; }
+
+/* dropdown */
+.user-dropdown {
+    position: absolute; right: 0; top: 46px;
+    width: 190px; background: white; color: #1f2937; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+    z-index: 200;
+}
+.user-dropdown ul { list-style: none; margin: 0; padding: 8px 0; }
+.user-dropdown li a { display: block; padding: 8px 15px; text-decoration: none; color: #1f2937; }
+.user-dropdown li a:hover { background: #f3f4f6; }
+
+.logout { color: #ef4444; }
+
+/* responsive adjustments */
+@media (max-width: 768px) {
+    .user-name { display: none; } /* hide name on narrow screens */
+}

@@ -1,0 +1,97 @@
+:root {
+    --sidebar-width: 250px;
+    --sidebar-bg: rgba(17,24,39,0.98);
+}
+
+/* Sidebar inicial fuera de pantalla (translateX para animación) */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: var(--sidebar-width);
+    transform: translateX(-100%);
+    background: var(--sidebar-bg);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.32s cubic-bezier(.2,.9,.2,1);
+    z-index: 120;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+}
+
+/* Clase que abre la sidebar */
+.sidebar.open {
+    transform: translateX(0);
+}
+
+/* Header area */
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.sidebar-logo {
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+/* Close button (visible solo en mobile) */
+.sidebar-close {
+    display: none;
+    background: none;
+    border: none;
+    color: #f3f4f6;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+/* Links */
+.sidebar-nav {
+    padding: 16px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-link {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #d1d5db;
+    text-decoration: none;
+    margin-bottom: 6px;
+    transition: background .18s, color .18s, transform .18s;
+}
+
+.sidebar-link:hover {
+    background: rgba(255,255,255,0.04);
+    color: #fbbf24;
+    transform: translateX(4px);
+}
+
+.sidebar-link-active {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+}
+
+/* Footer */
+.sidebar-footer {
+    padding: 14px 16px;
+    border-top: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+/* Responsive: mostrar botón cerrar y width menor en mobile */
+@media (max-width: 1023px) {
+    .sidebar {
+        width: 220px;
+    }
+    .sidebar-close {
+        display: inline-block;
+    }
+}

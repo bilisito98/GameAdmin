@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fondo animado para toda la app */
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: url("https://i0.wp.com/www.marcelopedra.com.ar/blog/wp-content/uploads/2013/10/animated-gifs-of-fighting-game-backgrounds-40.gif?resize=640%2C322&ssl=1")
+    no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Inter', sans-serif;
+    color: #fff;
+}
+
+/* Overlay para oscurecer el fondo y mejorar contraste */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 10, 0.65); /* ajusta opacidad */
+    z-index: -1; /* queda detrás del contenido */
+}
+
+/* Tarjetas (como ClientCard) */
+.card {
+    @apply bg-white bg-opacity-80 backdrop-blur-md shadow-lg rounded-xl p-4 transition hover:shadow-2xl;
+    color: #111;
+}
+
+/* Títulos */
+h1, h2, h3 {
+    @apply font-bold text-orange-400 drop-shadow-md;
+}
+
+/* Botones */
+.btn {
+    @apply px-4 py-2 rounded-xl font-semibold shadow-md transition;
+}
+
+.btn-primary {
+    @apply bg-purple-600 text-white hover:bg-purple-700;
+}
+
+.btn-secondary {
+    @apply bg-orange-500 text-white hover:bg-orange-600;
+}

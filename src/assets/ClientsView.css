@@ -1,0 +1,72 @@
+.clients-wrapper {
+    padding: 2rem;
+    min-height: calc(100vh - 60px);
+    color: #fff;
+}
+
+/* Título principal */
+.clients-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 8px rgba(124, 58, 237, 0.6);
+}
+
+/* Estados */
+.loading-text {
+    color: #a78bfa;
+    font-style: italic;
+}
+
+.error-text {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+/* Grid de clientes */
+.clients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+/* Card de cliente */
+.client-card {
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid #7c3aed;
+    border-radius: 0.75rem;
+    padding: 1.2rem;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.client-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.6);
+}
+
+.client-card h2 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #a78bfa;
+    margin-bottom: 0.5rem;
+}
+
+/* Conversor */
+.converter-card {
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid #7c3aed;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+    max-width: 400px;
+    margin-top: 2rem;
+}
+
+.converter-title {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #a78bfa;
+    margin-bottom: 1rem;
+}

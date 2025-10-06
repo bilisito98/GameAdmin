@@ -76,9 +76,10 @@ onMounted(async () => {
       name: c.name,
       balanceUsd: c.balanceUsd,
       activeLicense: c.activeLicense,
+      licenseStatus: c.licenseStatus,
       license: c.license,
       acquiredAt: c.acquiredAt,
-      group: c.group || "Grupo 1" // 🔥 fallback si aún no hay columna en la BD
+      group: c.group || "Grupo 1"
     }))
   } catch (err) {
     error.value = err.message

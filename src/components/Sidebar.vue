@@ -7,15 +7,37 @@
     </div>
 
     <nav class="sidebar-nav">
+      <!-- Enlaces normales -->
       <router-link
-          v-for="link in links"
-          :key="link.name"
-          :to="link.path"
-          class="sidebar-link"
-          active-class="sidebar-link-active"
-          @click.native="$emit('toggle')"
+        v-for="link in publicLinks"
+        :key="link.name"
+        :to="link.path"
+        class="sidebar-link"
+        active-class="sidebar-link-active"
+        @click.native="$emit('toggle')"
       >
         {{ link.name }}
+      </router-link>
+
+      <!-- Enlaces de administración visibles solo para admin -->
+      <router-link
+        v-if="auth.isAdmin"
+        to="/admin/clients"
+        class="sidebar-link"
+        active-class="sidebar-link-active"
+        @click.native="$emit('toggle')"
+      >
+        Admin Clientes
+      </router-link>
+
+      <router-link
+        v-if="auth.isAdmin"
+        to="/admin/projects"
+        class="sidebar-link"
+        active-class="sidebar-link-active"
+        @click.native="$emit('toggle')"
+      >
+        Admin Proyectos
       </router-link>
     </nav>
 
@@ -24,19 +46,23 @@
 </template>
 
 <script setup>
+import { useAuthStore } from '../store/authStore'
+
 defineProps({ isOpen: Boolean })
 defineEmits(['toggle'])
 
-const links = [
+const auth = useAuthStore()
+
+// Enlaces visibles para todos los usuarios autenticados
+const publicLinks = [
   { name: 'Inicio', path: '/' },
   { name: 'Clientes', path: '/clients' },
   { name: 'Licencias', path: '/licenses' },
   { name: 'Proyectos', path: '/projects' },
   { name: 'Solicitud', path: '/request' },
-  { name: 'Quiénes Somos', path: '/about' },
-  { name: 'Admin Clientes', path: '/admin/clients' },
-  { name: 'Admin Proyectos', path: '/admin/projects' }
+  { name: 'Quiénes Somos', path: '/about' }
 ]
 </script>
 
 <style src="../assets/sidebar.css"></style>
+

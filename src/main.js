@@ -3,8 +3,15 @@ import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
 import './assets/index.css'
+import { useAuthStore } from './store/authStore'
 
 const app = createApp(App)
-app.use(createPinia())
+const pinia = createPinia()
+app.use(pinia)
 app.use(router)
-app.mount('#app')
+
+// ⚡ Restaurar sesión antes de montar la app
+const auth = useAuthStore(pinia)
+auth.restoreSession('http://localhost:5147').finally(() => {
+  app.mount('#app')
+})

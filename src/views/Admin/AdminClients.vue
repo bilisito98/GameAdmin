@@ -21,6 +21,7 @@
           <th>Correo</th>
           <th>Teléfono</th>
           <th>Saldo (USD)</th>
+          <th>Grupo</th>
           <th>Licencia</th>
           <th>Estado Licencia</th>
           <th>Acciones</th>
@@ -34,6 +35,7 @@
           <td>{{ c.email || '-' }}</td>
           <td>{{ c.phone || '-' }}</td>
           <td>{{ formatMoney(c.balanceUsd) }}</td>
+          <td>{{ c.group || '-' }}</td>
           <td>{{ c.license?.name || 'Sin licencia' }}</td>
           <td>{{ c.licenseStatus || (c.activeLicense ? 'Activa' : 'Inactiva') }}</td>
           <td class="actions-col" v-if="auth.isAdmin">
@@ -63,8 +65,15 @@
           <input v-model="form.phone" class="input" />
           <label class="label">Saldo USD</label>
           <input v-model.number="form.balanceUsd" type="number" class="input" />
+          <label class="label">Grupo</label>
+          <select v-model="form.group" class="input">
+            <option value="Grupo 1">Grupo 1</option>
+            <option value="Grupo 2">Grupo 2</option>
+            <option value="Grupo 3">Grupo 3</option>
+          </select>
           <label class="label">Licencia</label>
           <select v-model="form.licenseId" class="input">
+            <option value="">Sin licencia</option>
             <option v-for="l in licenses" :key="l.id" :value="l.id">{{ l.name }}</option>
           </select>
           <label class="label">Estado Licencia</label>
@@ -102,7 +111,7 @@ const apiBase = 'http://localhost:5147'
 // Modal
 const showModal = ref(false)
 const editingClient = ref(false)
-const form = ref({ id: null, clientCode: '', name: '', email: '', phone: '', balanceUsd: 0, licenseId: null, licenseStatus: 'En espera' })
+const form = ref({ id: null, clientCode: '', name: '', email: '', phone: '', balanceUsd: 0, group: 'Grupo 1',  licenseId: null, licenseStatus: 'En espera' })
 
 // Toast
 const toast = ref(null)
@@ -145,15 +154,20 @@ async function loadLicenses() {
 
 function openAddModal() {
   editingClient.value = false
-  form.value = { id: null, clientCode: '', name: '', email: '', phone: '', balanceUsd: 0, licenseId: licenses.value[0]?.id || null, licenseStatus: 'En espera' }
+  form.value = { id: null, clientCode: '', name: '', email: '', phone: '', balanceUsd: 0, group: 'Grupo 1', licenseId: licenses.value[0]?.id || null, licenseStatus: 'En espera' }
   showModal.value = true
 }
 
-function openEditModal(client) {
+async function openEditModal(client) {
   editingClient.value = true
-  form.value = { ...client, licenseId: client.licenseId }
+  if (licenses.value.length === 0) await loadLicenses()  // aseguramos que estén cargadas
+  form.value = {
+    ...client,
+    licenseId: client.License?.id || null
+  }
   showModal.value = true
 }
+
 
 function closeModal() {
   showModal.value = false
@@ -163,18 +177,44 @@ async function saveClient() {
   try {
     const token = localStorage.getItem('studio_token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
+
+    const payload = { ...form.value }
+    if (!editingClient.value) {
+      delete payload.id
+    }
+
+    console.log('Enviando cliente:', payload) // 👈 revisa esto en consola
+
     if (editingClient.value) {
-      await axios.put(`${apiBase}/api/clients/${form.value.id}`, form.value, config)
+      await axios.put(`${apiBase}/api/admin/clients/${form.value.id}`, payload, config)
       showToast('Cliente actualizado')
     } else {
-      await axios.post(`${apiBase}/api/clients`, form.value, config)
+      await axios.post(`${apiBase}/api/admin/clients`, payload, config)
       showToast('Cliente agregado')
     }
+
     closeModal()
     loadClients()
   } catch (err) {
     console.error(err)
     showToast('Error guardando cliente', 'error')
+  }
+}
+
+function openDeleteConfirm(client) {
+  if (!confirm(`¿Eliminar cliente ${client.name}?`)) return
+  deleteClient(client.id)
+}
+async function deleteClient(id) {
+  try {
+    const token = localStorage.getItem('studio_token')
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    await axios.delete(`${apiBase}/api/admin/clients/${id}`, config)
+    showToast('Cliente eliminado')
+    loadClients()
+  } catch (err) {
+    console.error(err)
+    showToast('Error eliminando cliente', 'error')
   }
 }
 

@@ -6,22 +6,22 @@
       <form @submit.prevent="doLogin" class="modal-form">
         <label for="email" class="label">Correo</label>
         <input
-            id="email"
-            v-model="email"
-            type="email"
-            class="input"
-            placeholder="correo@dominio.com"
-            required
+          id="email"
+          v-model="email"
+          type="email"
+          class="input"
+          placeholder="correo@dominio.com"
+          required
         />
 
         <label for="password" class="label">Contraseña</label>
         <input
-            id="password"
-            v-model="password"
-            type="password"
-            class="input"
-            placeholder="********"
-            required
+          id="password"
+          v-model="password"
+          type="password"
+          class="input"
+          placeholder="********"
+          required
         />
 
         <p v-if="error" class="error-msg">{{ error }}</p>
@@ -42,28 +42,29 @@ import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
 const router = useRouter()
+
+// Variables reactivas
 const email = ref('')
 const password = ref('')
 const error = ref(null)
 
-// Para emitir al padre que cierre el modal
+// Emitir al padre que cierre el modal
 const emit = defineEmits(['close'])
-
-const close = () => {
-  emit('close')
-}
+const close = () => emit('close')
 
 const doLogin = async () => {
   error.value = null
-  const apiBase = 'http://localhost:5147'
+  const apiBase = 'http://localhost:5147' // 🔗 tu backend ASP.NET
 
   try {
+    // login del store
     const ok = await auth.login(apiBase, email.value.trim(), password.value.trim())
+
     if (!ok) {
       error.value = 'Credenciales inválidas o error en el servidor'
     } else {
-      emit('close') // Cerrar modal
-      // Redirigir según rol
+      emit('close') // cerrar modal
+      // Redirigir según el rol
       if (auth.isAdmin) router.push('/admin/clients')
       else router.push('/clients')
     }

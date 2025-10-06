@@ -143,7 +143,7 @@ export const useAuthStore = defineStore('auth', {
           return true
         }
 
-        // si todo falla, marcamos autenticado por token (pero sin user)
+        // sitodo falla, marcamos autenticado por token (pero sin user)
         this.isAuthenticated = !!token
         return !!token
       } finally {
@@ -151,7 +151,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Método utilitario para usar fetch público sin token
+    // Metodo utilitario para usar fetch público sin token
     async fetchPublic(url) {
       const res = await fetch(url)
       if (!res.ok) throw new Error(`Error cargando ${url}`)

@@ -64,5 +64,5 @@ const publicLinks = [
 ]
 </script>
 
-<style src="../assets/sidebar.css"></style>
+<style src="../assets/Sidebar.css"></style>
 

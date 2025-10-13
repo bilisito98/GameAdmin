@@ -106,7 +106,7 @@ const clients = ref([])
 const licenses = ref([])
 const loading = ref(false)
 const error = ref(null)
-const apiBase = 'https://gameadmin-backend-1.onrender.com/api'
+const apiBase = import.meta.env.VITE_API_URL
 
 // Modal
 const showModal = ref(false)

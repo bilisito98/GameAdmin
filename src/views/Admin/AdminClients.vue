@@ -160,7 +160,7 @@ function openAddModal() {
 
 async function openEditModal(client) {
   editingClient.value = true
-  if (licenses.value.length === 0) await loadLicenses()  // aseguramos que estén cargadas
+  if (licenses.value.length === 0) await loadLicenses()
   form.value = {
     ...client,
     licenseId: client.License?.id || null
@@ -183,7 +183,7 @@ async function saveClient() {
       delete payload.id
     }
 
-    console.log('Enviando cliente:', payload) // 👈 revisa esto en consola
+    console.log('Enviando cliente:', payload)
 
     if (editingClient.value) {
       await axios.put(`${apiBase}/api/admin/clients/${form.value.id}`, payload, config)

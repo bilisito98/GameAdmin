@@ -106,7 +106,7 @@ const clients = ref([])
 const licenses = ref([])
 const loading = ref(false)
 const error = ref(null)
-const apiBase = 'http://localhost:5147'
+const apiBase = 'https://gameadmin-backend-1.onrender.com/api'
 
 // Modal
 const showModal = ref(false)

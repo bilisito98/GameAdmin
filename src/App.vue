@@ -29,7 +29,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import Sidebar from './components/Sidebar.vue'
-import Topbar from './components/Topbar.vue'
+import TopBar from './components/TopBar.vue'
 import LoginModal from './components/LoginModal.vue'
 import { useAuthStore } from './store/authStore'
 import { useRouter } from 'vue-router'

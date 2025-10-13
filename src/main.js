@@ -12,6 +12,6 @@ app.use(router)
 
 // ⚡ Restaurar sesión antes de montar la app
 const auth = useAuthStore(pinia)
-auth.restoreSession('http://localhost:5147').finally(() => {
+auth.restoreSession('https://gameadmin-backend-1.onrender.com/api').finally(() => {
   app.mount('#app')
 })

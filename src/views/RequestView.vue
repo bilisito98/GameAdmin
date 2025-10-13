@@ -97,13 +97,13 @@ onMounted(async () => {
   try {
     let data
     if (auth.isAuthenticated) {
-      const res = await fetch('http://localhost:5147/api/clients', {
+      const res = await fetch('https://gameadmin-backend-1.onrender.com/api/clients', {
         headers: { 'Authorization': `Bearer ${auth.token}` }
       })
       if (!res.ok) throw new Error("Error cargando clientes autenticados")
       data = await res.json()
     } else {
-      data = await auth.fetchPublic('http://localhost:5147/api/clients')
+      data = await auth.fetchPublic('https://gameadmin-backend-1.onrender.com/api/clients')
     }
 
     clients.value = data.map(c => ({

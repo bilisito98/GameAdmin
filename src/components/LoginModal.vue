@@ -54,7 +54,7 @@ const close = () => emit('close')
 
 const doLogin = async () => {
   error.value = null
-  const apiBase = 'http://localhost:5147' // 🔗 tu backend ASP.NET
+  const apiBase = import.meta.env.VITE_API_URL || 'https://gameadmin-backend-1.onrender.com'
 
   try {
     // login del store

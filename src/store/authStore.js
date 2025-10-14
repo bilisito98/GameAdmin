@@ -86,16 +86,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('studio_user')
       delete axios.defaults.headers.common['Authorization']
     },
-
-    /**
-     * Restaurar sesión al arrancar la app.
-     * - Primero intenta leer user desde localStorage
-     * - Si no existe intenta llamar a GET /api/auth/me (si existe en tu backend)
-     * - Si tampoco, intenta decodificar el JWT para extraer roles/email
-     *
-     * Llamar en main.js o App.vue: await auth.restoreSession('http://localhost:5147')
-     */
-    async restoreSession(apiBase = 'http://localhost:5147') {
+    async restoreSession(apiBase = import.meta.env.VITE_API_URL) {
       this.loading = true
       try {
         const token = localStorage.getItem('studio_token')

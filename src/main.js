@@ -10,8 +10,10 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
-// ⚡ Restaurar sesión antes de montar la app
+// ✅ Restaurar sesión sin bloquear la carga inicial
 const auth = useAuthStore(pinia)
-auth.restoreSession('https://gameadmin-backend-1.onrender.com').finally(() => {
-  app.mount('#app')
-})
+auth.restoreSession(import.meta.env.VITE_API_URL || 'https://gameadmin-backend-1.onrender.com')
+  .catch(err => console.error('Error restaurando sesión:', err))
+  .finally(() => {
+    app.mount('#app')
+  })

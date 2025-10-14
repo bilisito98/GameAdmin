@@ -16,7 +16,7 @@
       <Sidebar :isOpen="isSidebarOpen" @toggle="toggleSidebar" />
 
       <div :class="['main-content', { 'sidebar-open': isSidebarOpen }]">
-        <Topbar @toggleSidebar="toggleSidebar" @logout="onLogout" />
+        <TopBar @toggleSidebar="toggleSidebar" @logout="onLogout" />
 
         <main class="main-body">
           <router-view />
@@ -41,8 +41,15 @@ const isSidebarOpen = ref(window.innerWidth >= 1024)
 const toggleSidebar = () => { isSidebarOpen.value = !isSidebarOpen.value }
 
 onMounted(async () => {
-  await auth.restoreSession()
-  if (auth.isAuthenticated) router.push({ name: 'home' })
+  try {
+    const timeout = new Promise(resolve => setTimeout(resolve, 5000)) // 5s máx
+    await Promise.race([auth.restoreSession(), timeout])
+  } catch (err) {
+    console.error('Error restaurando sesión:', err)
+  } finally {
+    auth.loading = false
+    if (auth.isAuthenticated) router.push({ name: 'home' })
+  }
 })
 
 const onLoginSuccess = () => {

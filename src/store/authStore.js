@@ -50,7 +50,7 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.lastError = null
       try {
-        const res = await axios.post(`${apiBase}/api/auth/login`, { email, password })
+        const res = await axios.post(`/api/auth/login`, { email, password })
         const { token, email: userEmail, userId, roles, fullName } = res.data
 
         // Normalizar roles (backend puede devolver string o array)

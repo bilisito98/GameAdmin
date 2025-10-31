@@ -2,20 +2,20 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
+/* ========= Configuración base de la API ========= */
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5147'
+
+// Establecer baseURL global de axios
+axios.defaults.baseURL = API_BASE
+
+/* ========= Funciones auxiliares ========= */
 function safeParseJSON(str) {
   try { return JSON.parse(str) } catch { return null }
-}
-
-function normalizeRoles(r) {
-  if (!r) return []
-  if (Array.isArray(r)) return r.map(x => String(x).toLowerCase())
-  return [String(r).toLowerCase()]
 }
 
 function decodeJwtPayload(token) {
   try {
     const part = token.split('.')[1]
-    // base64url -> base64
     const b64 = part.replace(/-/g, '+').replace(/_/g, '/')
     const padded = b64 + '='.repeat((4 - b64.length % 4) % 4)
     const json = atob(padded)
@@ -25,14 +25,16 @@ function decodeJwtPayload(token) {
   }
 }
 
+/* ========= Store de autenticación ========= */
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: safeParseJSON(localStorage.getItem('studio_user')) || null, // { id, email, fullName, roles }
+    user: safeParseJSON(localStorage.getItem('studio_user')) || null,
     token: localStorage.getItem('studio_token') || null,
     isAuthenticated: !!localStorage.getItem('studio_token'),
     loading: false,
     lastError: null
   }),
+
   getters: {
     isAdmin: (state) => {
       const roles = state.user?.roles ?? state.user?.role ?? []
@@ -45,18 +47,18 @@ export const useAuthStore = defineStore('auth', {
       return lower.includes('user')
     }
   },
+
   actions: {
-    async login(apiBase, email, password) {
+    /* ========= Login ========= */
+    async login(email, password) {
       this.loading = true
       this.lastError = null
       try {
         const res = await axios.post(`/api/auth/login`, { email, password })
         const { token, email: userEmail, userId, roles, fullName } = res.data
 
-        // Normalizar roles (backend puede devolver string o array)
         const normalizedRoles = Array.isArray(roles) ? roles : (roles ? [roles] : [])
 
-        // Guardar en state + localStorage
         this.token = token
         this.user = { id: userId, email: userEmail, fullName, roles: normalizedRoles }
         this.isAuthenticated = true
@@ -64,7 +66,6 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('studio_token', token)
         localStorage.setItem('studio_user', JSON.stringify(this.user))
 
-        // Configurar axios globalmente
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
         return true
@@ -77,6 +78,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    /* ========= Logout ========= */
     logout() {
       this.user = null
       this.token = null
@@ -86,7 +88,9 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('studio_user')
       delete axios.defaults.headers.common['Authorization']
     },
-    async restoreSession(apiBase = import.meta.env.VITE_API_URL) {
+
+    /* ========= Restaurar sesión ========= */
+    async restoreSession() {
       this.loading = true
       try {
         const token = localStorage.getItem('studio_token')
@@ -99,7 +103,6 @@ export const useAuthStore = defineStore('auth', {
         this.token = token
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
-        // 1) recuperar user desde localStorage si existe
         const stored = safeParseJSON(localStorage.getItem('studio_user'))
         if (stored) {
           this.user = stored
@@ -107,21 +110,20 @@ export const useAuthStore = defineStore('auth', {
           return true
         }
 
-        // 2) intentar pedir al endpoint /api/auth/me (si lo tienes)
         try {
-          const res = await axios.get(`${apiBase}/api/auth/me`)
+          const res = await axios.get(`/api/auth/me`)
           this.user = res.data
           localStorage.setItem('studio_user', JSON.stringify(this.user))
           this.isAuthenticated = true
           return true
         } catch (err) {
-          // puede que la API no tenga /me, seguimos a decodificar token
+          console.warn('No se pudo obtener /me, intentando decodificar token...')
         }
 
-        // 3) decodificar token (intento razonable para extraer roles/email)
         const payload = decodeJwtPayload(token)
         if (payload) {
-          const rolesClaim = payload['roles'] ?? payload['role'] ?? payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+          const rolesClaim = payload['roles'] ?? payload['role'] ??
+            payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
           const rolesArr = Array.isArray(rolesClaim) ? rolesClaim : (rolesClaim ? [rolesClaim] : [])
           this.user = {
             id: payload['jti'] ?? payload['sub'] ?? null,
@@ -134,7 +136,6 @@ export const useAuthStore = defineStore('auth', {
           return true
         }
 
-        // sitodo falla, marcamos autenticado por token (pero sin user)
         this.isAuthenticated = !!token
         return !!token
       } finally {
@@ -142,11 +143,12 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Metodo utilitario para usar fetch público sin token
+    /* ========= Fetch público ========= */
     async fetchPublic(url) {
-      const res = await fetch(url)
+      const res = await fetch(`${API_BASE}${url}`)
       if (!res.ok) throw new Error(`Error cargando ${url}`)
       return await res.json()
     }
   }
 })
+

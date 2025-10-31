@@ -27,16 +27,18 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-    const auth = useAuthStore()
-    if (auth.loading) await auth.restoreSession() // asegura sesión restaurada
+  const auth = useAuthStore()
 
-    if (to.meta.requiresAuth && !auth.isAuthenticated) {
-        next('/') // redirige a login modal
-    } else if (to.meta.role && !auth.isAdmin) {
-        next('/') // usuario no admin intenta entrar a ruta admin
-    } else {
-        next()
-    }
+  if (auth.loading) await auth.restoreSession()
+
+  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    if (to.path !== '/') next('/') // evita redirigir al mismo lugar
+    else next()
+  } else if (to.meta.role && to.meta.role === 'Admin' && !auth.isAdmin) {
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router

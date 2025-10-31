@@ -1,15 +1,14 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import vue from '@vitejs/plugin-vue'
 
+// Configuración para Vue
 export default defineConfig({
-  plugins: [react()],
-  base: '/', // 🔹 MUY IMPORTANTE para Render
-  build: {
-    outDir: 'dist'
-  },
+  plugins: [vue()],
   server: {
     port: 5173,
     host: true
+  },
+  build: {
+    outDir: 'dist'
   }
 })
-

@@ -57,7 +57,7 @@ const filteredClients = computed(() => {
 onMounted(async () => {
   try {
     let response, data
-    const url = 'http://localhost:5147/api/clients'
+    const url = 'https://gameadmin-backend-1.onrender.com/api/clients'
 
     if (auth.isAuthenticated) {
       response = await fetch(url, {

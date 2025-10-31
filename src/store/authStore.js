@@ -3,10 +3,24 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 
 /* ========= Configuración base de la API ========= */
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5147'
+// Detecta entorno y define URL base de forma segura
+let API_BASE = import.meta.env.VITE_API_URL?.trim()
 
-// Establecer baseURL global de axios
+if (!API_BASE || API_BASE === '' || API_BASE.includes('localhost')) {
+  // Si no hay variable válida, usar localhost por defecto
+  API_BASE = 'http://localhost:5147'
+}
+
+// Si estás en Render (front desplegado), forzar dominio del backend
+if (typeof window !== 'undefined' && window.location.hostname.includes('render.com')) {
+  API_BASE = 'https://gameadmin-backend-1.onrender.com'
+}
+
+// Configurar axios globalmente
 axios.defaults.baseURL = API_BASE
+
+// Opcional: mostrar en consola solo en modo desarrollo
+if (import.meta.env.DEV) console.log('🌍 API base URL:', API_BASE)
 
 /* ========= Funciones auxiliares ========= */
 function safeParseJSON(str) {
@@ -38,12 +52,16 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAdmin: (state) => {
       const roles = state.user?.roles ?? state.user?.role ?? []
-      const lower = Array.isArray(roles) ? roles.map(r => String(r).toLowerCase()) : [String(roles).toLowerCase()]
+      const lower = Array.isArray(roles)
+        ? roles.map(r => String(r).toLowerCase())
+        : [String(roles).toLowerCase()]
       return lower.includes('admin')
     },
     isUser: (state) => {
       const roles = state.user?.roles ?? state.user?.role ?? []
-      const lower = Array.isArray(roles) ? roles.map(r => String(r).toLowerCase()) : [String(roles).toLowerCase()]
+      const lower = Array.isArray(roles)
+        ? roles.map(r => String(r).toLowerCase())
+        : [String(roles).toLowerCase()]
       return lower.includes('user')
     }
   },
@@ -54,10 +72,12 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.lastError = null
       try {
-        const res = await axios.post(`/api/auth/login`, { email, password })
+        const res = await axios.post(`${API_BASE}/api/auth/login`, { email, password })
         const { token, email: userEmail, userId, roles, fullName } = res.data
 
-        const normalizedRoles = Array.isArray(roles) ? roles : (roles ? [roles] : [])
+        const normalizedRoles = Array.isArray(roles)
+          ? roles
+          : (roles ? [roles] : [])
 
         this.token = token
         this.user = { id: userId, email: userEmail, fullName, roles: normalizedRoles }
@@ -70,8 +90,8 @@ export const useAuthStore = defineStore('auth', {
 
         return true
       } catch (err) {
-        console.error('Error en login:', err)
-        this.lastError = err?.response?.data ?? err.message
+        console.error('❌ Error en login:', err)
+        this.lastError = err?.response?.data ?? err.message ?? 'Error desconocido'
         return false
       } finally {
         this.loading = false
@@ -111,20 +131,22 @@ export const useAuthStore = defineStore('auth', {
         }
 
         try {
-          const res = await axios.get(`/api/auth/me`)
+          const res = await axios.get(`${API_BASE}/api/auth/me`)
           this.user = res.data
           localStorage.setItem('studio_user', JSON.stringify(this.user))
           this.isAuthenticated = true
           return true
         } catch (err) {
-          console.warn('No se pudo obtener /me, intentando decodificar token...')
+          console.warn('⚠️ No se pudo obtener /me, intentando decodificar token...')
         }
 
         const payload = decodeJwtPayload(token)
         if (payload) {
           const rolesClaim = payload['roles'] ?? payload['role'] ??
             payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
-          const rolesArr = Array.isArray(rolesClaim) ? rolesClaim : (rolesClaim ? [rolesClaim] : [])
+          const rolesArr = Array.isArray(rolesClaim)
+            ? rolesClaim
+            : (rolesClaim ? [rolesClaim] : [])
           this.user = {
             id: payload['jti'] ?? payload['sub'] ?? null,
             email: payload['sub'] ?? payload['email'] ?? null,
@@ -151,4 +173,3 @@ export const useAuthStore = defineStore('auth', {
     }
   }
 })
-

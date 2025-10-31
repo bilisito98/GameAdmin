@@ -40,6 +40,9 @@ import ClientCard from '../components/ClientCard.vue'
 import CurrencyConverter from '../components/CurrencyConverter.vue'
 import { useAuthStore } from '../store/authStore'
 
+// ✅ Tomamos la URL base desde las variables de entorno (.env o .env.production)
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5147'
+
 const auth = useAuthStore()
 const clients = ref([])
 const loading = ref(true)
@@ -56,20 +59,23 @@ const filteredClients = computed(() => {
 
 onMounted(async () => {
   try {
-    let response, data
-    const url = 'https://gameadmin-backend-1.onrender.com/api/clients'
+    const url = `${API_BASE}/api/clients`
+    let response
+
+    console.log("🌐 Solicitando clientes desde:", url)
 
     if (auth.isAuthenticated) {
       response = await fetch(url, {
         headers: { 'Authorization': `Bearer ${auth.token}` }
       })
     } else {
-      response = await auth.fetchPublic(url)
+      // Si no está autenticado, intenta sin token
+      response = await fetch(url)
     }
 
     if (!response.ok) throw new Error(`Error cargando clientes: ${response.statusText}`)
 
-    data = await response.json()
+    const data = await response.json()
     clients.value = data.map(c => ({
       id: c.id,
       clientCode: c.clientCode,
@@ -88,6 +94,7 @@ onMounted(async () => {
   }
 })
 </script>
+
 
 <style scoped>
 .group-bar {

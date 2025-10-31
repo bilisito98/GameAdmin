@@ -1,3 +1,4 @@
+// src/main.js (ejemplo)
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
@@ -10,10 +11,8 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
-// ✅ Restaurar sesión sin bloquear la carga inicial
+// Restaurar sesión y luego montar (usa la restoreSession sin parámetros)
 const auth = useAuthStore(pinia)
-auth.restoreSession(import.meta.env.VITE_API_URL || 'https://gameadmin-backend-1.onrender.com')
-  .catch(err => console.error('Error restaurando sesión:', err))
-  .finally(() => {
-    app.mount('#app')
-  })
+auth.restoreSession().finally(() => {
+  app.mount('#app')
+})

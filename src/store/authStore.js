@@ -15,7 +15,6 @@ function normalizeRoles(r) {
 function decodeJwtPayload(token) {
   try {
     const part = token.split('.')[1]
-    // base64url -> base64
     const b64 = part.replace(/-/g, '+').replace(/_/g, '/')
     const padded = b64 + '='.repeat((4 - b64.length % 4) % 4)
     const json = atob(padded)
@@ -27,12 +26,17 @@ function decodeJwtPayload(token) {
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: safeParseJSON(localStorage.getItem('studio_user')) || null, // { id, email, fullName, roles }
+    user: safeParseJSON(localStorage.getItem('studio_user')) || null,
     token: localStorage.getItem('studio_token') || null,
     isAuthenticated: !!localStorage.getItem('studio_token'),
     loading: false,
-    lastError: null
+    lastError: null,
+
+    // 🔥 NUEVO: control de inactividad
+    lastActivity: Date.now(),
+    inactivityTimer: null
   }),
+
   getters: {
     isAdmin: (state) => {
       const roles = state.user?.roles ?? state.user?.role ?? []
@@ -45,6 +49,7 @@ export const useAuthStore = defineStore('auth', {
       return lower.includes('user')
     }
   },
+
   actions: {
     async login(apiBase, email, password) {
       this.loading = true
@@ -53,19 +58,19 @@ export const useAuthStore = defineStore('auth', {
         const res = await axios.post(`${apiBase}/api/auth/login`, { email, password })
         const { token, email: userEmail, userId, roles, fullName } = res.data
 
-        // Normalizar roles (backend puede devolver string o array)
         const normalizedRoles = Array.isArray(roles) ? roles : (roles ? [roles] : [])
 
-        // Guardar en state + localStorage
         this.token = token
         this.user = { id: userId, email: userEmail, fullName, roles: normalizedRoles }
         this.isAuthenticated = true
 
         localStorage.setItem('studio_token', token)
         localStorage.setItem('studio_user', JSON.stringify(this.user))
-
-        // Configurar axios globalmente
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
+        // 🔥 Inicia el control de inactividad al iniciar sesión
+        this.startActivityTracking()
+        this.startInactivityTimer()
 
         return true
       } catch (err) {
@@ -78,6 +83,15 @@ export const useAuthStore = defineStore('auth', {
     },
 
     logout() {
+      console.log('Cerrando sesión...')
+
+      // 🔥 Limpia el temporizador y los listeners
+      clearTimeout(this.inactivityTimer)
+      window.removeEventListener('mousemove', this.resetTimer)
+      window.removeEventListener('keydown', this.resetTimer)
+      window.removeEventListener('click', this.resetTimer)
+      window.removeEventListener('beforeunload', this.handleBeforeUnload)
+
       this.user = null
       this.token = null
       this.isAuthenticated = false
@@ -86,6 +100,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('studio_user')
       delete axios.defaults.headers.common['Authorization']
     },
+
     async restoreSession(apiBase = import.meta.env.VITE_API_URL) {
       this.loading = true
       try {
@@ -99,54 +114,55 @@ export const useAuthStore = defineStore('auth', {
         this.token = token
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
-        // 1) recuperar user desde localStorage si existe
         const stored = safeParseJSON(localStorage.getItem('studio_user'))
         if (stored) {
           this.user = stored
           this.isAuthenticated = true
-          return true
+
+          // 🔥 Restaurar monitoreo de actividad si la sesión sigue válida
+          this.startActivityTracking()
+          this.startInactivityTimer()
         }
 
-        // 2) intentar pedir al endpoint /api/auth/me (si lo tienes)
-        try {
-          const res = await axios.get(`${apiBase}/api/auth/me`)
-          this.user = res.data
-          localStorage.setItem('studio_user', JSON.stringify(this.user))
-          this.isAuthenticated = true
-          return true
-        } catch (err) {
-          // puede que la API no tenga /me, seguimos a decodificar token
-        }
-
-        // 3) decodificar token (intento razonable para extraer roles/email)
-        const payload = decodeJwtPayload(token)
-        if (payload) {
-          const rolesClaim = payload['roles'] ?? payload['role'] ?? payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
-          const rolesArr = Array.isArray(rolesClaim) ? rolesClaim : (rolesClaim ? [rolesClaim] : [])
-          this.user = {
-            id: payload['jti'] ?? payload['sub'] ?? null,
-            email: payload['sub'] ?? payload['email'] ?? null,
-            fullName: payload['name'] ?? payload['fullName'] ?? null,
-            roles: rolesArr
-          }
-          localStorage.setItem('studio_user', JSON.stringify(this.user))
-          this.isAuthenticated = true
-          return true
-        }
-
-        // sitodo falla, marcamos autenticado por token (pero sin user)
-        this.isAuthenticated = !!token
-        return !!token
+        return true
+      } catch (err) {
+        console.error('Error restaurando sesión:', err)
+        this.logout()
+        return false
       } finally {
         this.loading = false
       }
     },
 
-    // Metodo utilitario para usar fetch público sin token
-    async fetchPublic(url) {
-      const res = await fetch(url)
-      if (!res.ok) throw new Error(`Error cargando ${url}`)
-      return await res.json()
+    // ---------------------------------------------------------
+    // 🔥 NUEVAS FUNCIONES: Control de inactividad y cierre
+    // ---------------------------------------------------------
+
+    startInactivityTimer() {
+      clearTimeout(this.inactivityTimer)
+      this.inactivityTimer = setTimeout(() => {
+        this.logout()
+        alert('Tu sesión se ha cerrado automáticamente por inactividad.')
+      }, 5 * 60 * 1000) // 5 minutos
+    },
+
+    resetTimer() {
+      const store = useAuthStore()
+      store.lastActivity = Date.now()
+      store.startInactivityTimer()
+    },
+
+    startActivityTracking() {
+      window.addEventListener('mousemove', this.resetTimer)
+      window.addEventListener('keydown', this.resetTimer)
+      window.addEventListener('click', this.resetTimer)
+      window.addEventListener('beforeunload', this.handleBeforeUnload)
+    },
+
+    handleBeforeUnload() {
+      const store = useAuthStore()
+      store.logout()
     }
   }
 })
+

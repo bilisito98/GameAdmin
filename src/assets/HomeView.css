@@ -98,6 +98,9 @@
     width: 120px;
     transition: transform 0.3s ease;
 }
+.logo-img-Kodland {
+    color: #e5e5e5;
+}
 
 .logo-img:hover {
     transform: scale(1.1);

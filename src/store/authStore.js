@@ -3,23 +3,23 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 
 /* ========= Configuración base de la API ========= */
-// Detecta entorno y define URL base de forma segura
 let API_BASE = import.meta.env.VITE_API_URL?.trim()
 
+// Si la variable no existe o apunta a localhost, usar la API local
 if (!API_BASE || API_BASE === '' || API_BASE.includes('localhost')) {
-  // Si no hay variable válida, usar localhost por defecto
   API_BASE = 'http://localhost:5147'
 }
 
-// Si estás en Render (front desplegado), forzar dominio del backend
-if (typeof window !== 'undefined' && window.location.hostname.includes('render.com')) {
-  API_BASE = 'https://gameadmin-backend-1.onrender.com'
+// Detectar si el front está corriendo en Render y forzar dominio del backend
+if (typeof window !== 'undefined') {
+  const hostname = window.location.hostname
+  if (hostname.includes('render.com') || hostname.endsWith('.onrender.com')) {
+    API_BASE = 'https://gameadmin-backend-1.onrender.com'
+  }
 }
 
-// Configurar axios globalmente
 axios.defaults.baseURL = API_BASE
 
-// Opcional: mostrar en consola solo en modo desarrollo
 if (import.meta.env.DEV) console.log('🌍 API base URL:', API_BASE)
 
 /* ========= Funciones auxiliares ========= */
@@ -34,7 +34,7 @@ function decodeJwtPayload(token) {
     const padded = b64 + '='.repeat((4 - b64.length % 4) % 4)
     const json = atob(padded)
     return JSON.parse(json)
-  } catch (e) {
+  } catch {
     return null
   }
 }
@@ -46,7 +46,8 @@ export const useAuthStore = defineStore('auth', {
     token: localStorage.getItem('studio_token') || null,
     isAuthenticated: !!localStorage.getItem('studio_token'),
     loading: false,
-    lastError: null
+    lastError: null,
+    inactivityTimer: null
   }),
 
   getters: {
@@ -88,6 +89,9 @@ export const useAuthStore = defineStore('auth', {
 
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
+        // Iniciar temporizador de inactividad
+        this.startInactivityTimer()
+
         return true
       } catch (err) {
         console.error('❌ Error en login:', err)
@@ -107,6 +111,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('studio_token')
       localStorage.removeItem('studio_user')
       delete axios.defaults.headers.common['Authorization']
+      this.clearInactivityTimer()
     },
 
     /* ========= Restaurar sesión ========= */
@@ -127,6 +132,7 @@ export const useAuthStore = defineStore('auth', {
         if (stored) {
           this.user = stored
           this.isAuthenticated = true
+          this.startInactivityTimer()
           return true
         }
 
@@ -135,6 +141,7 @@ export const useAuthStore = defineStore('auth', {
           this.user = res.data
           localStorage.setItem('studio_user', JSON.stringify(this.user))
           this.isAuthenticated = true
+          this.startInactivityTimer()
           return true
         } catch (err) {
           console.warn('⚠️ No se pudo obtener /me, intentando decodificar token...')
@@ -155,6 +162,7 @@ export const useAuthStore = defineStore('auth', {
           }
           localStorage.setItem('studio_user', JSON.stringify(this.user))
           this.isAuthenticated = true
+          this.startInactivityTimer()
           return true
         }
 
@@ -162,6 +170,29 @@ export const useAuthStore = defineStore('auth', {
         return !!token
       } finally {
         this.loading = false
+      }
+    },
+
+    /* ========= Cierre automático por inactividad ========= */
+    startInactivityTimer() {
+      this.clearInactivityTimer()
+      const timeout = 5 * 60 * 1000 // 5 minutos
+      this.inactivityTimer = setTimeout(() => {
+        console.warn('⏳ Sesión cerrada por inactividad')
+        this.logout()
+      }, timeout)
+
+      // Reiniciar temporizador al detectar movimiento o clic
+      const resetTimer = () => this.startInactivityTimer()
+      window.addEventListener('mousemove', resetTimer)
+      window.addEventListener('keydown', resetTimer)
+      window.addEventListener('click', resetTimer)
+    },
+
+    clearInactivityTimer() {
+      if (this.inactivityTimer) {
+        clearTimeout(this.inactivityTimer)
+        this.inactivityTimer = null
       }
     },
 
@@ -173,3 +204,4 @@ export const useAuthStore = defineStore('auth', {
     }
   }
 })
+

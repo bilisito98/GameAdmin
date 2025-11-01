@@ -50,7 +50,7 @@
       </div>
 
       <div class="home-card">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/Scratchcat.png" alt="IA Scratch" class="home-img"/>
+        <img src="..\assets\PacmanScratch.gif" alt="IA Scratch" class="home-img"/>
         <h2 class="home-card-title">Innovación con IA Scratch</h2>
         <p>
           Implementamos una IA visual que enseña Scratch de manera divertida, paso a paso,
@@ -69,14 +69,15 @@
 
     <!-- Logos con enlaces -->
     <div class="logos-container">
-      <a href="/" target="_self">
+      <a href="https://scratch.mit.edu/" target="_self">
         <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/Scratchcat.png" alt="Scratch Logo" class="logo-img"/>
       </a>
       <a href="https://www.kodland.org/es" target="_blank">
-        <img src="https://static.wixstatic.com/media/0b3d48_c76edbb7e67140dd8e3c8f24f0c6e2fc~mv2.png/v1/fill/w_320,h_213,al_c,q_85,usm_0.66_1.00_0.01/Kodland%20Logo.png" alt="Kodland Logo" class="logo-img"/>
+        <img src="../assets/LogoKodland.svg" alt="Kodland Logo" class="logo-img-Kodland"/>
       </a>
     </div>
   </div>
 </template>
 
 <style scoped src="../assets/HomeView.css"></style>
+

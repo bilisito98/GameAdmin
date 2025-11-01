@@ -73,7 +73,7 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/Scratchcat.png" alt="Scratch Logo" class="logo-img"/>
       </a>
       <a href="https://www.kodland.org/es" target="_blank">
-        <img src="C:\Users\Compumax\Desktop\Proyectos\studio-frontend\src\assets\LogoKodland.svg" alt="Kodland Logo" class="logo-img-Kodland"/>
+        <img src="../assets/LogoKodland.svg" alt="Kodland Logo" class="logo-img-Kodland"/>
       </a>
     </div>
   </div>

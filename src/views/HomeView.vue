@@ -50,7 +50,7 @@
       </div>
 
       <div class="home-card">
-        <img src="C:\Users\Compumax\Desktop\Proyectos\studio-frontend\src\assets\PacmanScratch.gif" alt="IA Scratch" class="home-img"/>
+        <img src="..\assets\PacmanScratch.gif" alt="IA Scratch" class="home-img"/>
         <h2 class="home-card-title">Innovación con IA Scratch</h2>
         <p>
           Implementamos una IA visual que enseña Scratch de manera divertida, paso a paso,

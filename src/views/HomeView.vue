@@ -69,7 +69,7 @@
 
     <!-- Logos con enlaces -->
     <div class="logos-container">
-      <a href="/" target="_self">
+      <a href="https://scratch.mit.edu/" target="_self">
         <img src="..\assets\LogoScratchIA.gif" alt="Scratch Logo" class="logo-img"/>
       </a>
       <a href="https://www.kodland.org/es" target="_blank">

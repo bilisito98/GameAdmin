@@ -9,13 +9,25 @@
 
     <div class="projects-grid">
       <div v-for="project in projects" :key="project.Id" class="project-card">
-        <img v-if="project.ImageUrl" :src="project.ImageUrl" alt="Imagen del proyecto" class="project-image"/>
+        <img
+          v-if="project.ImageUrl"
+          :src="fixDriveImage(project.ImageUrl)"
+          alt="Imagen del proyecto"
+          class="project-image"
+        />
+
         <h2 class="project-card-title">{{ project.Title }}</h2>
         <p><strong>Descripción:</strong> {{ project.Description || 'Sin descripción' }}</p>
         <p><strong>Características:</strong> {{ project.Features || 'N/A' }}</p>
         <p><strong>Instrucciones:</strong> {{ project.Instructions || 'N/A' }}</p>
+
         <div v-if="project.VideoUrl" class="project-video">
-          <iframe :src="project.VideoUrl" frameborder="0" allowfullscreen></iframe>
+          <iframe
+            :src="getEmbedUrl(project.VideoUrl)"
+            class="thumb"
+            allow="autoplay; encrypted-media"
+            allowfullscreen
+          ></iframe>
         </div>
       </div>
     </div>
@@ -31,9 +43,30 @@ const projects = ref([])
 const loading = ref(true)
 const error = ref(null)
 
+// ✅ Para videos (iframe)
+function getEmbedUrl(url) {
+  if (!url) return ''
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/)
+  if (match) {
+    const id = match[1]
+    return `https://drive.google.com/file/d/${id}/preview`
+  }
+  return url
+}
+
+// ✅ Para imágenes (<img>)
+function fixDriveImage(url) {
+  if (!url) return ''
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/)
+  if (match) {
+    const id = match[1]
+    return `https://lh3.googleusercontent.com/d/${id}`
+  }
+  return url
+}
 onMounted(async () => {
   try {
-    let response, data
+    let response
     const url = 'http://localhost:5147/api/projects'
 
     if (auth.isAuthenticated) {
@@ -46,15 +79,15 @@ onMounted(async () => {
 
     if (!response.ok) throw new Error(`Error cargando proyectos: ${response.statusText}`)
 
-    data = await response.json()
+    const data = await response.json()
     projects.value = data.map(p => ({
       Id: p.id,
       Title: p.title,
       Description: p.description,
       Features: p.features,
       Instructions: p.instructions,
-      ImageUrl: p.imageUrl,
-      VideoUrl: p.videoUrl
+      ImageUrl: p.imageUrl,     // 👈 cruda
+      VideoUrl: p.videoUrl      // 👈 cruda
     }))
   } catch (err) {
     error.value = err.message

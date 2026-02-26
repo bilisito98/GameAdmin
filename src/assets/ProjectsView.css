@@ -1,42 +1,133 @@
 .projects-wrapper {
-    padding: 2rem;
+    padding: 2.5rem;
     min-height: calc(100vh - 60px);
+    background: radial-gradient(circle at 30% 30%, rgba(40, 40, 60, 0.9), rgba(10, 10, 20, 0.95));
     color: #fff;
+    font-family: "Poppins", sans-serif;
+    transition: all 0.3s ease;
 }
 
+/* ===== TITULOS ===== */
 .projects-title {
-    font-size: 1.8rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 0 8px rgba(124, 58, 237, 0.6);
+    font-size: 2rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 0.25rem;
+    color: #c084fc;
+    text-shadow: 0 0 12px rgba(192, 132, 252, 0.8);
 }
 
 .projects-subtitle {
-    color: #e5e5e5;
-    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #cfcfcf;
+    font-size: 1rem;
+    margin-bottom: 2rem;
 }
 
+/* ===== GRILLA DE PROYECTOS ===== */
 .projects-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    justify-content: center;
 }
 
+/* ===== TARJETAS ===== */
 .project-card {
-    background: rgba(20, 20, 20, 0.85);
-    padding: 1rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
-    transition: transform 0.2s;
+    background: rgba(30, 30, 20, 0.8);
+    border: 1px solid rgba(192, 132, 252, 0.3);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .project-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.6);
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.6);
+    border-color: rgba(192, 132, 252, 0.6);
 }
 
+/* ===== IMAGEN ===== */
+.project-image {
+  width: 50%;
+  max-height: 250px;         /* ajusta si quieres */
+  object-fit: contain;        /* 🔥 clave */
+  background-color: #0f0f1a;  /* fondo elegante */
+  border-radius: 12px;
+  display: block;
+}
+
+.project-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(192, 132, 252, 0.7);
+}
+
+/* ===== TITULO ===== */
 .project-card-title {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
+    color: #e0b3ff;
+    text-align: center;
     margin-bottom: 0.5rem;
+}
+
+/* ===== TEXTO ===== */
+.project-card p {
+    color: #d1d1d1;
+    font-size: 0.95rem;
+    margin: 0.25rem 0;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.project-card strong {
+    color: #c084fc;
+}
+
+/* ===== VIDEO ===== */
+.project-video {
+    width: 80%;
+    height: 500px;
+    margin-top: 1rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+    transition: transform 0.3s ease;
+}
+
+.project-video iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0.75rem;
+}
+
+.project-video:hover {
+    transform: scale(1.03);
+}
+
+/* ===== ESTADOS ===== */
+.loading,
+.error-text,
+.no-projects {
+    text-align: center;
+    font-size: 1.1rem;
+    padding: 2rem;
+}
+
+.loading {
+    color: #c084fc;
+}
+
+.error-text {
+    color: #f87171;
+}
+
+.no-projects {
+    color: #a1a1aa;
 }

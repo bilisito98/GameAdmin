@@ -1,87 +1,142 @@
 <template>
-  <div class="ml-64 p-6">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-white">Administrar Proyectos</h1>
-      <button @click="openAddModal" class="btn-primary">+ Agregar Proyecto</button>
+  <div class="ml-64 p-6 text-white">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold tracking-wide">Administrar Proyectos</h1>
+      <button @click="openAddModal" class="admin-btn-primary flex items-center gap-2">
+        <span class="text-lg">＋</span> Agregar Proyecto
+      </button>
     </div>
 
-    <div v-if="loading" class="panel panel--info">Cargando proyectos...</div>
-    <div v-if="error" class="panel panel--error">{{ error }}</div>
+    <!-- Estado de carga o error -->
+    <div v-if="loading" class="admin-panel info">Cargando proyectos...</div>
+    <div v-if="error" class="admin-panel error">{{ error }}</div>
 
-    <div class="table-wrap" v-if="!loading && !error">
+    <!-- Tabla de proyectos -->
+    <div v-if="!loading && !error" class="table-wrap">
       <table class="styled-table">
         <thead>
-        <tr>
-          <th>ID</th>
-          <th>Foto</th>
-          <th>Video</th>
-          <th>Título</th>
-          <th>Descripción</th>
-          <th>Acciones</th>
-        </tr>
+          <tr>
+            <th>ID</th>
+            <th>Foto</th>
+            <th>Video</th>
+            <th>Título</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+          </tr>
         </thead>
         <tbody>
-        <tr v-for="p in projects" :key="p.id" class="row-hover">
-          <td>{{ p.id }}</td>
-          <td>
-            <img v-if="p.imageUrl" :src="p.imageUrl" alt="Foto" class="thumb" />
-            <span v-else>-</span>
-          </td>
-          <td>
-            <video v-if="p.videoUrl" :src="p.videoUrl" class="thumb" controls></video>
-            <span v-else>-</span>
-          </td>
-          <td>{{ p.title }}</td>
-          <td class="truncate">{{ p.description }}</td>
-          <td class="actions-col">
-            <button @click="openEditModal(p)" class="link-btn">Editar</button>
-            <button @click="openDeleteConfirm(p)" class="link-btn link-btn--danger">Eliminar</button>
-          </td>
-        </tr>
-        <tr v-if="projects.length === 0">
-          <td colspan="6" class="text-center">No hay proyectos para mostrar.</td>
-        </tr>
+          <tr v-for="p in projects" :key="p.id" class="row-hover">
+            <td>{{ p.id }}</td>
+            <td>
+              <img v-if="p.imageUrl" :src="getDriveImage(p.imageUrl)" alt="Foto" class="thumb" />
+              <span v-else>-</span>
+            </td>
+            <td>
+              <video v-if="p.videoUrl" :src="p.videoUrl" class="thumb" controls></video>
+              <span v-else>-</span>
+            </td>
+            <td>{{ p.title }}</td>
+            <td class="truncate">{{ p.description }}</td>
+            <td class="actions-col">
+              <button @click="openEditModal(p)" class="link-btn">Editar</button>
+              <button @click="openDeleteConfirm(p)" class="link-btn link-btn--danger">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+          <tr v-if="projects.length === 0">
+            <td colspan="6" class="text-center py-4 text-gray-400">
+              No hay proyectos registrados.
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
 
     <!-- Modal Add/Edit -->
-    <div v-if="showModal" class="modal-backdrop">
-      <div class="modal-card">
-        <h3 class="modal-title">{{ editingProject ? 'Editar Proyecto' : 'Agregar Proyecto' }}</h3>
-
-        <form @submit.prevent="saveProject" class="modal-form">
-          <label class="label">Título</label>
-          <input v-model="form.title" class="input" placeholder="Ej: CRM Corporativo" required />
-
-          <label class="label">Descripción</label>
-          <textarea v-model="form.description" class="input" rows="3" placeholder="Breve descripción..."></textarea>
-
-          <label class="label">Foto (URL)</label>
-          <input v-model="form.imageUrl" type="url" class="input" placeholder="https://ejemplo.com/imagen.jpg" />
-
-          <label class="label">Video (URL)</label>
-          <input v-model="form.videoUrl" type="url" class="input" placeholder="https://ejemplo.com/video.mp4" />
-
-          <div class="modal-actions">
-            <button type="button" class="btn-ghost" @click="closeModal">Cancelar</button>
-            <button type="submit" class="btn-primary">{{ editingProject ? 'Actualizar' : 'Guardar' }}</button>
+    <transition name="modal-fade">
+      <div v-if="showModal" class="modal-backdrop">
+        <div class="admin-modal">
+          <div class="admin-modal-header">
+            <h2 class="text-xl font-semibold text-white">
+              {{ editingProject ? "Editar Proyecto" : "Agregar Proyecto" }}
+            </h2>
+            <button class="close-btn" @click="closeModal">✕</button>
           </div>
-        </form>
-      </div>
-    </div>
 
-    <!-- Modal Delete -->
-    <div v-if="showDeleteModal" class="modal-backdrop">
-      <div class="modal-card">
-        <h3 class="modal-title">Eliminar proyecto</h3>
-        <p>¿Eliminar el proyecto <strong>{{ selectedProject?.title }}</strong>?</p>
-        <div class="modal-actions">
-          <button class="btn-ghost" @click="closeDelete">Cancelar</button>
-          <button class="btn-danger" @click="confirmDelete">Eliminar</button>
+          <form @submit.prevent="saveProject" class="admin-form">
+            <label class="form-label">Título</label>
+            <input v-model="form.title" class="form-input" placeholder="Ej: CRM Corporativo" required />
+
+            <label class="form-label">Descripción</label>
+            <textarea
+              v-model="form.description"
+              class="form-input"
+              rows="3"
+              placeholder="Breve descripción del proyecto..."
+            ></textarea>
+
+            <label class="form-label">Características</label>
+            <textarea
+              v-model="form.features"
+              class="form-input"
+              rows="2"
+              placeholder="Ej: Integración con API, dashboard moderno"
+            ></textarea>
+
+            <label class="form-label">Instrucciones</label>
+            <textarea
+              v-model="form.instructions"
+              class="form-input"
+              rows="2"
+              placeholder="Instrucciones de instalación o uso"
+            ></textarea>
+
+            <label class="form-label">Foto (URL)</label>
+            <input
+              v-model="form.imageUrl"
+              type="url"
+              class="form-input"
+              placeholder="https://ejemplo.com/imagen.jpg"
+            />
+
+            <label class="form-label">Video (URL)</label>
+            <input
+              v-model="form.videoUrl"
+              type="url"
+              class="form-input"
+              placeholder="https://ejemplo.com/video.mp4"
+            />
+
+            <div class="modal-actions">
+              <button type="button" class="admin-btn-secondary" @click="closeModal">
+                Cancelar
+              </button>
+              <button type="submit" class="admin-btn-primary">
+                {{ editingProject ? "Actualizar" : "Guardar" }}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-    </div>
+    </transition>
+
+    <!-- Modal Delete -->
+    <transition name="modal-fade">
+      <div v-if="showDeleteModal" class="modal-backdrop">
+        <div class="admin-modal small">
+          <h2 class="text-lg font-semibold mb-2 text-white">Eliminar Proyecto</h2>
+          <p class="text-gray-300 mb-6">
+            ¿Seguro que deseas eliminar el proyecto <strong>{{ selectedProject?.title }}</strong>?
+          </p>
+          <div class="modal-actions">
+            <button class="admin-btn-secondary" @click="closeDelete">Cancelar</button>
+            <button class="admin-btn-danger" @click="confirmDelete">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </transition>
 
     <!-- Toast -->
     <transition name="toast-fade">
@@ -93,7 +148,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import api from "@/axios";
 
 export default {
   data() {
@@ -105,54 +160,61 @@ export default {
       showDeleteModal: false,
       editingProject: false,
       selectedProject: null,
-      form: this.emptyForm(),
-      toast: null,
-      toastType: "success",
-      apiBase: null,
-    };
-  },
-  methods: {
-    emptyForm() {
-      return {
+      form: {
         id: null,
         title: "",
         description: "",
         imageUrl: "",
         videoUrl: "",
-      };
-    },
-    async determineApiBase() {
-      const candidates = [
-        { url: "https://localhost:5001" },
-        { url: "http://localhost:5000" },
-      ];
-      for (const c of candidates) {
-        try {
-          const test = await axios.get(`${c.url}/api/projects`, { timeout: 3000 });
-          if (test && test.status >= 200 && test.status < 400) {
-            this.apiBase = c.url;
-            return;
-          }
-        } catch {}
-      }
-      this.apiBase = "http://localhost:5147";
-    },
+        features: "",
+        instructions: "",
+      },
+      toast: null,
+      toastType: "success",
+    };
+  },
+  methods: {
     async loadProjects() {
       this.loading = true;
       this.error = null;
-      if (!this.apiBase) await this.determineApiBase();
       try {
-        const res = await axios.get(`${this.apiBase}/api/projects`);
+        const res = await api.get("/api/projects");
         this.projects = res.data || [];
-      } catch {
+      } catch (err) {
+        console.error("❌ Error al cargar proyectos:", err);
         this.error = "Error al cargar proyectos";
-        this.showToast("No se pudieron cargar proyectos", "error");
+        this.showToast("No se pudieron cargar los proyectos ❌", "error");
       } finally {
         this.loading = false;
       }
     },
+    getEmbedUrl(url) {
+       if (!url) return "";
+       const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+       if (match) {
+         const id = match[1];
+         if (url.includes("/view")) {
+           // Si es imagen
+           return `https://drive.google.com/uc?export=view&id=${id}`;
+         } else {
+           // Si es video
+           return `https://drive.google.com/file/d/${id}/preview`;
+         }
+       }
+       return url; // si no es de Drive
+    },
+    getDriveImage(url) {
+      if (!url) return "";
+      const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (match) {
+        const id = match[1];
+        // URL correcta para <img> desde Google Drive
+        return `https://lh3.googleusercontent.com/d/${id}`;
+      }
+      return url; // si no es Drive
+    },
     openAddModal() {
-      this.form = this.emptyForm();
+      this.form = { id: null, title: "", description: "", imageUrl: "", videoUrl: "", features: "", instructions: "" };
       this.editingProject = false;
       this.showModal = true;
     },
@@ -163,7 +225,6 @@ export default {
     },
     closeModal() {
       this.showModal = false;
-      this.form = this.emptyForm();
     },
     openDeleteConfirm(p) {
       this.selectedProject = p;
@@ -175,30 +236,44 @@ export default {
     },
     async saveProject() {
       try {
-        if (!this.apiBase) await this.determineApiBase();
-        const payload = { ...this.form };
+        const payload = {
+          id: this.form.id || 0,
+          title: this.form.title,
+          description: this.form.description,
+          imageUrl: this.form.imageUrl,
+          videoUrl: this.form.videoUrl,
+          features: this.form.features || "",
+          instructions: this.form.instructions || "",
+          createdById: "admin",
+          createdAt: new Date().toISOString(),
+        };
+
+        console.log("📤 Enviando payload al backend:", payload);
+
         if (this.editingProject && this.form.id) {
-          await axios.put(`${this.apiBase}/api/projects/${this.form.id}`, payload);
+          await api.put(`/api/projects/${this.form.id}`, payload);
           this.showToast("Proyecto actualizado ✅");
         } else {
-          await axios.post(`${this.apiBase}/api/projects`, payload);
+          await api.post("/api/projects", payload);
           this.showToast("Proyecto agregado ✅");
         }
+
         this.closeModal();
         await this.loadProjects();
-      } catch {
+      } catch (err) {
+        console.error("❌ Error al guardar proyecto:", err);
         this.showToast("Error al guardar proyecto ❌", "error");
       }
     },
     async confirmDelete() {
       if (!this.selectedProject) return;
       try {
-        if (!this.apiBase) await this.determineApiBase();
-        await axios.delete(`${this.apiBase}/api/projects/${this.selectedProject.id}`);
+        await api.delete(`/api/projects/${this.selectedProject.id}`);
         this.showToast("Proyecto eliminado ✅");
         this.closeDelete();
         await this.loadProjects();
-      } catch {
+      } catch (err) {
+        console.error("❌ Error al eliminar proyecto:", err);
         this.showToast("Error al eliminar proyecto ❌", "error");
       }
     },
@@ -215,18 +290,21 @@ export default {
 };
 </script>
 
-<style>
-/* reutilizamos los mismos estilos que ya hiciste para AdminClients */
-.table-wrap { overflow-x: auto; }
+
+<style scoped>
+.table-wrap {
+  overflow-x: auto;
+}
 .styled-table {
   width: 100%;
   border-collapse: collapse;
-  background: #1e1e2f;
+  background: #1b1b2d;
   color: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
 }
-.styled-table th, .styled-table td {
+.styled-table th,
+.styled-table td {
   padding: 12px;
   border-bottom: 1px solid #333;
 }
@@ -234,76 +312,163 @@ export default {
   background: #2d2d44;
   text-align: left;
 }
-.row-hover:hover { background: #2a2a3d; }
+.row-hover:hover {
+  background: #2a2a3d;
+  transition: background 0.2s ease;
+}
 .thumb {
   width: 80px;
   height: 60px;
   object-fit: cover;
   border-radius: 4px;
 }
-/* Botones */
-.btn-primary {
-  background: #4f46e5;
-  color: #fff;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.btn-primary:hover { background: #4338ca; }
-.btn-ghost {
-  background: transparent;
-  color: #bbb;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.btn-ghost:hover { background: #2d2d44; }
 .link-btn {
-  color: #3b82f6;
+  color: #60a5fa;
   cursor: pointer;
   margin-right: 8px;
 }
-.link-btn--danger { color: #ef4444; }
-/* Modal */
+.link-btn--danger {
+  color: #ef4444;
+}
+.admin-btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.admin-btn-primary:hover {
+  background: linear-gradient(135deg, #4338ca, #4f46e5);
+}
+.admin-btn-secondary {
+  background: #2d2d44;
+  color: #bbb;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+.admin-btn-secondary:hover {
+  background: #3a3a55;
+}
+.admin-btn-danger {
+  background: #dc2626;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+.admin-btn-danger:hover {
+  background: #b91c1c;
+}
+
+/* MODAL */
 .modal-backdrop {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex; align-items: center; justify-content: center;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 20, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 50;
+  backdrop-filter: blur(6px);
 }
-.modal-card {
-  background: #fff;
-  color: #000;
-  padding: 20px;
-  border-radius: 10px;
-  width: 450px;
+.admin-modal {
+  background: #2a2a3d;
+  color: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  width: 480px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+  animation: modalIn 0.25s ease;
 }
-.modal-title { font-size: 20px; margin-bottom: 10px; }
-.modal-form .label { display: block; margin: 8px 0 4px; font-weight: bold; }
-.input, textarea {
-  width: 100%; padding: 8px;
-  border: 1px solid #ccc; border-radius: 6px;
-  margin-bottom: 8px;
+.admin-modal.small {
+  width: 380px;
+}
+.admin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.close-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 20px;
+  cursor: pointer;
+}
+.close-btn:hover {
+  color: #fff;
+}
+.form-label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  background: #1e1e2f;
+  border: 1px solid #3b3b55;
+  color: #fff;
+  outline: none;
+  transition: border 0.2s ease;
+}
+.form-input:focus {
+  border-color: #6366f1;
 }
 .modal-actions {
-  display: flex; justify-content: flex-end; gap: 10px;
-  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
 }
-.btn-danger {
-  background: #dc2626; color: white;
-  padding: 6px 12px; border-radius: 6px;
+
+/* ANIMACIONES */
+@keyframes modalIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
-.btn-danger:hover { background: #b91c1c; }
-/* Toast */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.25s;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+/* TOAST */
 .toast {
-  position: fixed; bottom: 20px; right: 20px;
-  background: #4ade80; color: #000;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #4ade80;
+  color: #000;
   padding: 12px 18px;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   z-index: 100;
 }
-.toast--error { background: #f87171; }
-.toast-fade-enter-active, .toast-fade-leave-active { transition: opacity .3s; }
-.toast-fade-enter-from, .toast-fade-leave-to { opacity: 0; }
+.toast--error {
+  background: #f87171;
+}
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: opacity 0.3s;
+}
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
+}
 </style>

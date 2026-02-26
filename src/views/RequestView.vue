@@ -24,8 +24,9 @@
     <div class="overlay" :class="{ show: bannerOpen }" @click="cerrarBanner"></div>
 
     <div class="request-banner" :class="{ show: bannerOpen }">
-      <h3 class="client-name">Solicitud para: {{ clienteSeleccionado?.Name }}</h3>
+      <h3 class="client-name">Solicitud De: {{ clienteSeleccionado?.Name }}</h3>
       <input v-model="nuevoCliente" type="text" placeholder="Nombre del cliente" />
+      <input v-model="monto" type="number" placeholder="Monto en USD" min="1"  />
       <textarea v-model="descripcion" rows="3" placeholder="Detalle de la solicitud"></textarea>
       <button class="request-btn" @click="enviarSolicitud">Enviar Solicitud</button>
       <button style="margin-top:0.5rem; background:#f87171;" @click="cerrarBanner">Cancelar</button>
@@ -45,38 +46,45 @@ const error = ref(null)
 const bannerOpen = ref(false)
 const clienteSeleccionado = ref(null)
 const nuevoCliente = ref("")
+const monto = ref(0)
 const descripcion = ref("")
 
 const abrirBanner = (cliente) => {
   clienteSeleccionado.value = cliente
   nuevoCliente.value = cliente.Name
   descripcion.value = ""
+  monto.value = 0
   bannerOpen.value = true
 }
 
 const cerrarBanner = () => { bannerOpen.value = false }
 
 const enviarSolicitud = async () => {
-  if (!nuevoCliente.value || !descripcion.value) {
-    alert("Por favor completa todos los campos.")
+  if (!clienteSeleccionado.value || !descripcion.value || monto.value <= 0) {
+    alert("Completa todos los campos correctamente.")
     return
   }
 
   try {
-    const res = await fetch('http://localhost:5147/api/requests', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/requests`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth.token || ''}`
+
       },
       body: JSON.stringify({
         ClientId: clienteSeleccionado.value.Id,
-        AmountUsd: 100,
+        AmountUsd: Number(monto.value),
         Message: descripcion.value
       })
     })
-    if (!res.ok) throw new Error("Error enviando solicitud")
-    alert(`Solicitud enviada para ${nuevoCliente.value}`)
+
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(text || "Error enviando solicitud")
+    }
+
+    alert("Solicitud enviada")
     bannerOpen.value = false
   } catch (err) {
     alert(err.message)
@@ -97,13 +105,13 @@ onMounted(async () => {
   try {
     let data
     if (auth.isAuthenticated) {
-      const res = await fetch('https://gameadmin-backend-1.onrender.com/api/clients', {
+      const res = await fetch('http://localhost:5147/api/clients', {
         headers: { 'Authorization': `Bearer ${auth.token}` }
       })
       if (!res.ok) throw new Error("Error cargando clientes autenticados")
       data = await res.json()
     } else {
-      data = await auth.fetchPublic('https://gameadmin-backend-1.onrender.com/api/clients')
+      data = await auth.fetchPublic('http://localhost:5147/api/clients')
     }
 
     clients.value = data.map(c => ({

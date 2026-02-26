@@ -54,13 +54,14 @@ const close = () => emit('close')
 
 const doLogin = async () => {
   error.value = null
+  const apiBase = import.meta.env.VITE_API_URL || 'https://gameadmin-backend-1.onrender.com'
 
   try {
-    // Llamada CORRECTA: auth.login(email, password)
-    const ok = await auth.login(email.value.trim(), password.value.trim())
+    // login del store
+    const ok = await auth.login(apiBase, email.value.trim(), password.value.trim())
 
     if (!ok) {
-      error.value = auth.lastError || 'Credenciales inválidas o error en el servidor'
+      error.value = 'Credenciales inválidas o error en el servidor'
     } else {
       emit('close') // cerrar modal
       // Redirigir según el rol
@@ -73,6 +74,5 @@ const doLogin = async () => {
   }
 }
 </script>
-
 
 <style src="../assets/modal.css"></style>

@@ -8,6 +8,7 @@ import RequestView from '../views/RequestView.vue'
 import AboutView from '../views/AboutView.vue'
 import AdminClients from '../views/Admin/AdminClients.vue'
 import AdminProjects from '../views/Admin/AdminProjects.vue'
+import AdminRequests from '../views/Admin/AdminRequests.vue'
 
 const routes = [
     { path: '/', name: 'home', component: HomeView, meta: { requiresAuth: true } },
@@ -18,6 +19,7 @@ const routes = [
     { path: '/about', name: 'about', component: AboutView, meta: { requiresAuth: true } },
     { path: '/admin/clients', name: 'admin-clients', component: AdminClients, meta: { requiresAuth: true, role: 'Admin' } },
     { path: '/admin/projects', name: 'admin-projects', component: AdminProjects, meta: { requiresAuth: true, role: 'Admin' } },
+    { path: '/admin/requests', name: 'admin-requests', component: AdminRequests, meta: { requiresAuth: true, role: 'Admin'} },
     { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 

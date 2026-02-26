@@ -21,24 +21,31 @@
 
       <!-- Enlaces de administración visibles solo para admin -->
       <router-link
-        v-if="auth.isAdmin"
-        to="/admin/clients"
-        class="sidebar-link"
-        active-class="sidebar-link-active"
-        @click.native="$emit('toggle')"
-      >
-        Admin Clientes
-      </router-link>
+          to="/admin/clients"
+          class="sidebar-link"
+          active-class="sidebar-link-active"
+          @click="$emit('toggle')"
+        >
+          👥 Admin Clientes
+        </router-link>
 
-      <router-link
-        v-if="auth.isAdmin"
-        to="/admin/projects"
-        class="sidebar-link"
-        active-class="sidebar-link-active"
-        @click.native="$emit('toggle')"
-      >
-        Admin Proyectos
-      </router-link>
+        <router-link
+          to="/admin/projects"
+          class="sidebar-link"
+          active-class="sidebar-link-active"
+          @click="$emit('toggle')"
+        >
+          📦 Admin Proyectos
+        </router-link>
+
+        <router-link
+          to="/admin/requests"
+          class="sidebar-link"
+          active-class="sidebar-link-active"
+          @click="$emit('toggle')"
+        >
+          💰 Admin Solicitudes
+        </router-link>
     </nav>
 
     <div class="sidebar-footer">© 2025 Studio</div>

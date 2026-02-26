@@ -67,7 +67,7 @@ function fixDriveImage(url) {
 onMounted(async () => {
   try {
     let response
-    const url = 'http://localhost:5147/api/projects'
+    const url = 'https://gameadmin-backend-1.onrender.com/api/projects'
 
     if (auth.isAuthenticated) {
       response = await fetch(url, {

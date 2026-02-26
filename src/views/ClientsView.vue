@@ -41,7 +41,7 @@ import CurrencyConverter from '../components/CurrencyConverter.vue'
 import { useAuthStore } from '../store/authStore'
 
 // ✅ Tomamos la URL base desde las variables de entorno (.env o .env.production)
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5147'
+const API_BASE = import.meta.env.VITE_API_URL || 'https://gameadmin-backend-1.onrender.com'
 
 const auth = useAuthStore()
 const clients = ref([])

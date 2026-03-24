@@ -58,7 +58,7 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.lastError = null
       try {
-        const res = await api.post("/api/auth/login", { email, password })
+        const res = await api.post("/auth/login", { email, password })
         const { token, email: userEmail, userId, roles, fullName } = res.data
 
         const normalizedRoles = Array.isArray(roles) ? roles : (roles ? [roles] : [])

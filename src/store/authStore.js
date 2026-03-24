@@ -1,6 +1,6 @@
 // src/store/authStore.js
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import api from '../axios'
 
 function safeParseJSON(str) {
   try { return JSON.parse(str) } catch { return null }
@@ -55,7 +55,7 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.lastError = null
       try {
-        const res = await axios.post(`${apiBase}/api/auth/login`, { email, password })
+        const res = await api.post("/auth/login", { email, password })
         const { token, email: userEmail, userId, roles, fullName } = res.data
 
         const normalizedRoles = Array.isArray(roles) ? roles : (roles ? [roles] : [])
@@ -66,7 +66,6 @@ export const useAuthStore = defineStore('auth', {
 
         localStorage.setItem('studio_token', token)
         localStorage.setItem('studio_user', JSON.stringify(this.user))
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
         // 🔥 Inicia el control de inactividad al iniciar sesión
         this.startActivityTracking()

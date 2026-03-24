@@ -43,36 +43,37 @@ import { useRouter } from 'vue-router'
 const auth = useAuthStore()
 const router = useRouter()
 
-// Variables reactivas
 const email = ref('')
 const password = ref('')
 const error = ref(null)
 
-// Emitir al padre que cierre el modal
 const emit = defineEmits(['close'])
 const close = () => emit('close')
 
 const doLogin = async () => {
   error.value = null
-  const apiBase = import.meta.env.VITE_API_URL || 'https://gameadmin-backend-1.onrender.com'
 
   try {
-    // login del store
-    const ok = await auth.login(apiBase, email.value.trim(), password.value.trim())
+    // ✅ NO necesitas apiBase
+    const ok = await auth.login(email.value.trim(), password.value.trim())
 
     if (!ok) {
       error.value = 'Credenciales inválidas o error en el servidor'
-    } else {
-      emit('close') // cerrar modal
-      // Redirigir según el rol
-      if (auth.isAdmin) router.push('/admin/clients')
-      else router.push('/clients')
+      return
     }
+
+    emit('close')
+
+    // ✅ Redirección por rol
+    if (auth.isAdmin) {
+      router.push('/admin/clients')
+    } else {
+      router.push('/clients')
+    }
+
   } catch (err) {
     console.error('Login error:', err)
     error.value = 'Error conectando con el servidor'
   }
 }
 </script>
-
-<style src="../assets/modal.css"></style>

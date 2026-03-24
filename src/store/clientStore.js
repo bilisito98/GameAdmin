@@ -16,7 +16,7 @@ export const useClientStore = defineStore('clients', {
             try {
                 const authStore = useAuthStore()
 
-                const res = await api.get("/admin/clients")
+                const res = await api.get("/api/admin/clients")
                 console.log("Clientes recibidos:", res.data)
 
                 // Mapeamos la respuesta a la estructura usada por ClientCard.vue

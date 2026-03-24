@@ -16,11 +16,6 @@ export const useClientStore = defineStore('clients', {
             try {
                 const authStore = useAuthStore()
 
-                // Si hay token, se asegura que axios lo use
-                if (authStore.token) {
-                    axios.defaults.headers.common['Authorization'] = `Bearer ${authStore.token}`
-                }
-
                 const res = await api.get("/admin/clients")
                 console.log("Clientes recibidos:", res.data)
 

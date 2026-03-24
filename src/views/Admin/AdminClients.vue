@@ -99,24 +99,34 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../../store/authStore'
-import api from '../../axios'
+import api from '@/axios'
 
 const auth = useAuthStore()
 const clients = ref([])
 const licenses = ref([])
 const loading = ref(false)
 const error = ref(null)
-const apiBase = import.meta.env.VITE_API_URL
 
 // Modal
 const showModal = ref(false)
 const editingClient = ref(false)
-const form = ref({ id: null, clientCode: '', name: '', email: '', phone: '', balanceUsd: 0, group: 'Grupo 1',  licenseId: null, licenseStatus: 'En espera' })
+const form = ref({
+  id: null,
+  clientCode: '',
+  name: '',
+  email: '',
+  phone: '',
+  balanceUsd: 0,
+  group: 'Grupo 1',
+  licenseId: null,
+  licenseStatus: 'En espera'
+})
 
 // Toast
 const toast = ref(null)
 const toastType = ref('success')
 let _toastTimer = null
+
 function showToast(msg, type = 'success') {
   toast.value = msg
   toastType.value = type
@@ -125,17 +135,17 @@ function showToast(msg, type = 'success') {
 }
 
 // ---------------------------
-// Funciones CRUD
+// CRUD
 // ---------------------------
+
 async function loadClients() {
   loading.value = true
   error.value = null
   try {
-    const token = localStorage.getItem('studio_token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-    const res = api.get('/clients')
+    const res = await api.get('/clients') // ✅ FIX await + ruta correcta
     clients.value = res.data || []
   } catch (err) {
+    console.error(err)
     error.value = 'Error al cargar clientes'
     showToast(error.value, 'error')
   } finally {
@@ -145,7 +155,7 @@ async function loadClients() {
 
 async function loadLicenses() {
   try {
-    const res = api.post('/admin/clients', payload)
+    const res = await api.get('/admin/licenses') // ✅ FIX GET + ruta correcta
     licenses.value = res.data || []
   } catch (err) {
     console.error('Error cargando licencias', err)
@@ -154,20 +164,34 @@ async function loadLicenses() {
 
 function openAddModal() {
   editingClient.value = false
-  form.value = { id: null, clientCode: '', name: '', email: '', phone: '', balanceUsd: 0, group: 'Grupo 1', licenseId: licenses.value[0]?.id || null, licenseStatus: 'En espera' }
+  form.value = {
+    id: null,
+    clientCode: '',
+    name: '',
+    email: '',
+    phone: '',
+    balanceUsd: 0,
+    group: 'Grupo 1',
+    licenseId: licenses.value[0]?.id || null,
+    licenseStatus: 'En espera'
+  }
   showModal.value = true
 }
 
 async function openEditModal(client) {
   editingClient.value = true
-  if (licenses.value.length === 0) await loadLicenses()
+
+  if (licenses.value.length === 0) {
+    await loadLicenses()
+  }
+
   form.value = {
     ...client,
-    licenseId: client.License?.id || null
+    licenseId: client.license?.id || null // ✅ FIX nombre correcto
   }
+
   showModal.value = true
 }
-
 
 function closeModal() {
   showModal.value = false
@@ -175,10 +199,8 @@ function closeModal() {
 
 async function saveClient() {
   try {
-    const token = localStorage.getItem('studio_token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-
     const payload = { ...form.value }
+
     if (!editingClient.value) {
       delete payload.id
     }
@@ -186,15 +208,17 @@ async function saveClient() {
     console.log('Enviando cliente:', payload)
 
     if (editingClient.value) {
+      // ✅ UPDATE
       await api.put(`/admin/clients/${form.value.id}`, payload)
       showToast('Cliente actualizado')
     } else {
-      await api.put(`/admin/clients/${form.value.id}`, payload)
+      // ✅ CREATE (ANTES ESTABA MAL)
+      await api.post('/admin/clients', payload)
       showToast('Cliente agregado')
     }
 
     closeModal()
-    loadClients()
+    await loadClients()
   } catch (err) {
     console.error(err)
     showToast('Error guardando cliente', 'error')
@@ -205,13 +229,12 @@ function openDeleteConfirm(client) {
   if (!confirm(`¿Eliminar cliente ${client.name}?`)) return
   deleteClient(client.id)
 }
+
 async function deleteClient(id) {
   try {
-    const token = localStorage.getItem('studio_token')
-    const config = { headers: { Authorization: `Bearer ${token}` } }
-    await axios.delete(`${apiBase}/api/admin/clients/${id}`, config)
+    await api.delete(`/admin/clients/${id}`) // ✅ FIX usar api
     showToast('Cliente eliminado')
-    loadClients()
+    await loadClients()
   } catch (err) {
     console.error(err)
     showToast('Error eliminando cliente', 'error')
@@ -223,11 +246,14 @@ function formatMoney(v) {
   return Number(v).toFixed(2)
 }
 
+// ---------------------------
+
 onMounted(() => {
   if (!auth.isAdmin) {
     error.value = 'No autorizado. Solo admins pueden acceder.'
     return
   }
+
   loadLicenses()
   loadClients()
 })

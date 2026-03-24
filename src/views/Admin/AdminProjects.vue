@@ -178,7 +178,7 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        const res = await api.get("/api/projects");
+        const res = await api.get("/projects");
         this.projects = res.data || [];
       } catch (err) {
         console.error("❌ Error al cargar proyectos:", err);
@@ -251,10 +251,10 @@ export default {
         console.log("📤 Enviando payload al backend:", payload);
 
         if (this.editingProject && this.form.id) {
-          await api.put(`/api/projects/${this.form.id}`, payload);
+          await api.put(`/projects/${this.form.id}`, payload);
           this.showToast("Proyecto actualizado ✅");
         } else {
-          await api.post("/api/projects", payload);
+          await api.post("/projects", payload);
           this.showToast("Proyecto agregado ✅");
         }
 
@@ -268,7 +268,7 @@ export default {
     async confirmDelete() {
       if (!this.selectedProject) return;
       try {
-        await api.delete(`/api/projects/${this.selectedProject.id}`);
+        await api.delete(`/projects/${this.selectedProject.id}`);
         this.showToast("Proyecto eliminado ✅");
         this.closeDelete();
         await this.loadProjects();

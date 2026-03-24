@@ -91,42 +91,68 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue"
+import api from "@/axios"
 
 const requests = ref([])
 const selectedFilter = ref("")
 
+// -------------------------
+// CARGAR REQUESTS
+// -------------------------
 const loadRequests = async () => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/requests`)
-  const data = await res.json()
+  try {
+    const res = await api.get("/requests") // ✅ usa interceptor
+    const data = res.data
 
-  requests.value = data.map(r => ({
-    ...r,
-    newStatus: ""
-  }))
+    requests.value = data.map(r => ({
+      ...r,
+      newStatus: ""
+    }))
+  } catch (err) {
+    console.error("❌ Error cargando requests:", err)
+  }
 }
 
+// -------------------------
+// ACTUALIZAR ESTADO
+// -------------------------
 const updateStatus = async (req) => {
-  if (!req.newStatus) return alert("Selecciona un estado")
+  if (!req.newStatus) {
+    alert("Selecciona un estado")
+    return
+  }
 
-  await fetch(`${import.meta.env.VITE_API_URL}/api/requests/${req.id}/status`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(req.newStatus)
-  })
+  try {
+    await api.put(`/requests/${req.id}/status`, {
+      status: req.newStatus
+    })
 
-  alert("Estado actualizado")
-  loadRequests()
+    alert("Estado actualizado")
+    loadRequests()
+  } catch (err) {
+    console.error("❌ Error actualizando estado:", err)
+    alert("Error actualizando estado")
+  }
 }
 
+// -------------------------
+// FILTRO
+// -------------------------
 const filteredRequests = computed(() => {
   if (!selectedFilter.value) return requests.value
   return requests.value.filter(r => r.status === selectedFilter.value)
 })
 
+// -------------------------
+// CONTADORES
+// -------------------------
 const countByStatus = (status) => {
   return requests.value.filter(r => r.status === status).length
 }
 
+// -------------------------
+// BADGE
+// -------------------------
 const badgeClass = (status) => {
   return {
     badge: true,
@@ -137,10 +163,14 @@ const badgeClass = (status) => {
   }
 }
 
+// -------------------------
+// FORMATO FECHA
+// -------------------------
 const formatDate = (date) => {
   return new Date(date).toLocaleString()
 }
 
+// -------------------------
 onMounted(loadRequests)
 </script>
 

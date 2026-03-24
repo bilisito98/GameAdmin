@@ -54,33 +54,44 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async login(email, password) {
-      this.loading = true
+    async login(apiBase, email, password) {
+    this.loading = true
+    this.lastError = null
     
     try {
-      const res = await api.post("/auth/login", { email, password })
-      const { token, email: userEmail, userId, roles, fullName } = res.data
+      const res = await api.post("/auth/login", {
+        email,
+        password
+      })
         
+      const { token, email: userEmail, userId, roles, fullName } = res.data
+      const normalizedRoles = Array.isArray(roles)
+        ? roles
+        : (roles ? [roles] : [])
+
       this.token = token
       this.user = {
         id: userId,
         email: userEmail,
         fullName,
-        roles
+        roles: normalizedRoles
       }
       
       this.isAuthenticated = true
-      localStorage.setItem('studio_token', token) 
+    
+      localStorage.setItem('studio_token', token)
       localStorage.setItem('studio_user', JSON.stringify(this.user))
       return true
-    
+  
     } catch (err) {
-      console.error(err)
+      console.error('Error en login:', err)
+      this.lastError = err?.response?.data ?? err.message
       return false
     } finally {
       this.loading = false
     }
-  },
+
+    },
 
     logout() {
       console.log('Cerrando sesión...')

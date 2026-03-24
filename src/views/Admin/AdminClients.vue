@@ -99,7 +99,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../../store/authStore'
-import axios from 'axios'
+import api from '../../axios'
 
 const auth = useAuthStore()
 const clients = ref([])
@@ -133,7 +133,7 @@ async function loadClients() {
   try {
     const token = localStorage.getItem('studio_token')
     const config = { headers: { Authorization: `Bearer ${token}` } }
-    const res = await axios.get(`${apiBase}/api/clients`, config)
+    const res = api.get('/clients')
     clients.value = res.data || []
   } catch (err) {
     error.value = 'Error al cargar clientes'
@@ -145,7 +145,7 @@ async function loadClients() {
 
 async function loadLicenses() {
   try {
-    const res = await axios.get(`${apiBase}/api/admin/licenses`)
+    const res = api.post('/admin/clients', payload)
     licenses.value = res.data || []
   } catch (err) {
     console.error('Error cargando licencias', err)
@@ -186,10 +186,10 @@ async function saveClient() {
     console.log('Enviando cliente:', payload)
 
     if (editingClient.value) {
-      await axios.put(`${apiBase}/api/admin/clients/${form.value.id}`, payload, config)
+      await api.put(`/admin/clients/${form.value.id}`, payload)
       showToast('Cliente actualizado')
     } else {
-      await axios.post(`${apiBase}/api/admin/clients`, payload, config)
+      await api.put(`/admin/clients/${form.value.id}`, payload)
       showToast('Cliente agregado')
     }
 

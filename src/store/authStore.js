@@ -114,7 +114,7 @@ export const useAuthStore = defineStore('auth', {
         }
 
         this.token = token
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
         const stored = safeParseJSON(localStorage.getItem('studio_user'))
         if (stored) {

@@ -21,7 +21,7 @@ export const useClientStore = defineStore('clients', {
                     axios.defaults.headers.common['Authorization'] = `Bearer ${authStore.token}`
                 }
 
-                const res = await api.get("/api/clients")
+                const res = await api.get("/admin/clients")
                 console.log("Clientes recibidos:", res.data)
 
                 // Mapeamos la respuesta a la estructura usada por ClientCard.vue

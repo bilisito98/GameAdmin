@@ -39,9 +39,12 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     isAdmin: (state) => {
-      const roles = state.user?.roles ?? state.user?.role ?? []
-      const lower = Array.isArray(roles) ? roles.map(r => String(r).toLowerCase()) : [String(roles).toLowerCase()]
-      return lower.includes('admin')
+      if (!state.user) return false
+        const roles = state.user.roles || []
+        const normalized = Array.isArray(roles)
+            ? roles.map(r => String(r).toLowerCase())
+            : [String(roles).toLowerCase()]
+        return normalized.includes('admin')
     },
     isUser: (state) => {
       const roles = state.user?.roles ?? state.user?.role ?? []

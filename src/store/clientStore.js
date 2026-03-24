@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import api from '../axios'
 import { useAuthStore } from './authStore'
 
 export const useClientStore = defineStore('clients', {
@@ -21,7 +21,7 @@ export const useClientStore = defineStore('clients', {
                     axios.defaults.headers.common['Authorization'] = `Bearer ${authStore.token}`
                 }
 
-                const res = await axios.get("http://localhost:5147/api/clients")
+                const res = await api.get("/api/clients")
                 console.log("Clientes recibidos:", res.data)
 
                 // Mapeamos la respuesta a la estructura usada por ClientCard.vue

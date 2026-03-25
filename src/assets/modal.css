@@ -11,7 +11,7 @@
 
 /* CARD */
 .modal-card {
-  width: 400px;
+  width: 600px;
   max-width: calc(100% - 32px);
   background: linear-gradient(145deg, #ffffff, #f3f4f6);
   border-radius: 16px;

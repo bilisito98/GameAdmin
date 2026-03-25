@@ -32,7 +32,7 @@ export const useAuthStore = defineStore('auth', {
     loading: false,
     lastError: null,
 
-    // 🔥 NUEVO: control de inactividad
+    // 🔥 Control de inactividad
     lastActivity: Date.now(),
     inactivityTimer: null
   }),
@@ -40,66 +40,71 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAdmin: (state) => {
       if (!state.user) return false
-        const roles = state.user.roles || []
-        const normalized = Array.isArray(roles)
-            ? roles.map(r => String(r).toLowerCase())
-            : [String(roles).toLowerCase()]
-        return normalized.includes('admin')
+      const roles = state.user.roles || []
+      const normalized = Array.isArray(roles)
+        ? roles.map(r => String(r).toLowerCase())
+        : [String(roles).toLowerCase()]
+      return normalized.includes('admin')
     },
     isUser: (state) => {
       const roles = state.user?.roles ?? state.user?.role ?? []
-      const lower = Array.isArray(roles) ? roles.map(r => String(r).toLowerCase()) : [String(roles).toLowerCase()]
+      const lower = Array.isArray(roles)
+        ? roles.map(r => String(r).toLowerCase())
+        : [String(roles).toLowerCase()]
       return lower.includes('user')
     }
   },
 
   actions: {
+
+    // 🔥 LOGIN CORREGIDO
     async login(email, password) {
-    this.loading = true
-    this.lastError = null
-    
-    try {
-      const res = await api.post(
-        "https://gameadmin-backend-1.onrender.com/api/auth/login",
-        {
+      this.loading = true
+      this.lastError = null
+
+      try {
+        const res = await api.post("/auth/login", {
           email,
           password
+        })
+
+        const { token, email: userEmail, userId, roles, fullName } = res.data
+
+        const normalizedRoles = Array.isArray(roles)
+          ? roles
+          : (roles ? [roles] : [])
+
+        this.token = token
+
+        // 🔥 CLAVE: activar token en axios
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
+        this.user = {
+          id: userId,
+          email: userEmail,
+          fullName,
+          roles: normalizedRoles
         }
-      )
-        
-      const { token, email: userEmail, userId, roles, fullName } = res.data
-      const normalizedRoles = Array.isArray(roles)
-        ? roles
-        : (roles ? [roles] : [])
 
-      this.token = token
-      this.user = {
-        id: userId,
-        email: userEmail,
-        fullName,
-        roles: normalizedRoles
+        this.isAuthenticated = true
+
+        localStorage.setItem('studio_token', token)
+        localStorage.setItem('studio_user', JSON.stringify(this.user))
+
+        return true
+
+      } catch (err) {
+        console.error('Error en login:', err)
+        this.lastError = err?.response?.data ?? err.message
+        return false
+      } finally {
+        this.loading = false
       }
-      
-      this.isAuthenticated = true
-    
-      localStorage.setItem('studio_token', token)
-      localStorage.setItem('studio_user', JSON.stringify(this.user))
-      return true
-  
-    } catch (err) {
-      console.error('Error en login:', err)
-      this.lastError = err?.response?.data ?? err.message
-      return false
-    } finally {
-      this.loading = false
-    }
-
     },
 
     logout() {
       console.log('Cerrando sesión...')
 
-      // 🔥 Limpia el temporizador y los listeners
       clearTimeout(this.inactivityTimer)
       window.removeEventListener('mousemove', this.resetTimer)
       window.removeEventListener('keydown', this.resetTimer)
@@ -110,15 +115,18 @@ export const useAuthStore = defineStore('auth', {
       this.token = null
       this.isAuthenticated = false
       this.lastError = null
+
       localStorage.removeItem('studio_token')
       localStorage.removeItem('studio_user')
-      delete axios.defaults.headers.common['Authorization']
+
+      delete api.defaults.headers.common['Authorization']
     },
 
-    async restoreSession(apiBase = import.meta.env.VITE_API_URL) {
+    async restoreSession() {
       this.loading = true
       try {
         const token = localStorage.getItem('studio_token')
+
         if (!token) {
           this.isAuthenticated = false
           this.user = null
@@ -126,19 +134,22 @@ export const useAuthStore = defineStore('auth', {
         }
 
         this.token = token
+
+        // 🔥 restaurar token en axios
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
         const stored = safeParseJSON(localStorage.getItem('studio_user'))
+
         if (stored) {
           this.user = stored
           this.isAuthenticated = true
 
-          // 🔥 Restaurar monitoreo de actividad si la sesión sigue válida
           this.startActivityTracking()
           this.startInactivityTimer()
         }
 
         return true
+
       } catch (err) {
         console.error('Error restaurando sesión:', err)
         this.logout()
@@ -148,16 +159,14 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // ---------------------------------------------------------
-    // 🔥 NUEVAS FUNCIONES: Control de inactividad y cierre
-    // ---------------------------------------------------------
+    // 🔥 INACTIVIDAD
 
     startInactivityTimer() {
       clearTimeout(this.inactivityTimer)
       this.inactivityTimer = setTimeout(() => {
         this.logout()
         alert('Tu sesión se ha cerrado automáticamente por inactividad.')
-      }, 5 * 60 * 1000) // 5 minutos
+      }, 5 * 60 * 1000)
     },
 
     resetTimer() {
@@ -179,4 +188,3 @@ export const useAuthStore = defineStore('auth', {
     }
   }
 })
-

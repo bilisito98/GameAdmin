@@ -1,19 +1,21 @@
 import axios from "axios";
 
-// 🔥 Detecta la URL correctamente (con fallback)
+// 🔥 Base URL segura (con fallback para producción)
 const baseURL =
-  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_URL?.trim() ||
   "https://gameadmin-backend-1.onrender.com/api";
 
+// 👀 Debug (puedes quitar después)
 console.log("🌐 API URL usada:", baseURL);
 
 const api = axios.create({
-  baseURL: baseURL,
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
+// ✅ Interceptor para agregar token JWT automáticamente
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("studio_token");
@@ -25,6 +27,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// ✅ Interceptor para manejar errores globales
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -39,7 +42,7 @@ api.interceptors.response.use(
         console.warn("🚫 Acceso no autorizado. Verifica el token o el rol.");
       }
     } else {
-      console.error("❌ Error de conexión con el servidor");
+      console.error("❌ No hay conexión con el servidor");
     }
 
     return Promise.reject(error);

@@ -59,7 +59,7 @@ export const useAuthStore = defineStore('auth', {
     this.lastError = null
     
     try {
-      const res = await api.post("/Auth/login", {
+      const res = await api.post("/auth/login", {
         email,
         password
       })

@@ -19,11 +19,18 @@
         <input
           id="password"
           v-model="password"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
           class="input"
           placeholder="********"
           required
         />
+        <button
+          type="button"
+          class="toggle-password"
+          @click="showPassword = !showPassword"
+        >
+          {{ showPassword ? '🙈' : '👁️' }}
+        </button>
 
         <!-- Error -->
         <p v-if="error" class="error-msg">{{ error }}</p>
@@ -63,6 +70,7 @@ const router = useRouter()
 
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const error = ref(null)
 const loading = ref(false)
 

@@ -59,10 +59,13 @@ export const useAuthStore = defineStore('auth', {
     this.lastError = null
     
     try {
-      const res = await api.post("/auth/login", {
-        email,
-        password
-      })
+      const res = await api.post(
+        "https://gameadmin-backend-1.onrender.com/api/auth/login",
+        {
+          email,
+          password
+        }
+      )
         
       const { token, email: userEmail, userId, roles, fullName } = res.data
       const normalizedRoles = Array.isArray(roles)

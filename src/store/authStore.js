@@ -54,7 +54,7 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async login(apiBase, email, password) {
+    async login(email, password) {
     this.loading = true
     this.lastError = null
     

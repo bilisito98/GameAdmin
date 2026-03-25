@@ -117,3 +117,17 @@
 .btn-ghost:hover {
   background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
 }
+.password-container {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
